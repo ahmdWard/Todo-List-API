@@ -7,6 +7,11 @@ const taskSchema= new mongoose.Schema({
     },
     description:{
         type:String,
+    },
+    status:{
+        type:String,
+        enum:['done','in progress'],
+        default:"in progress"
     }
 })
 
