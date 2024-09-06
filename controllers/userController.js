@@ -63,28 +63,6 @@ exports.updateMe=catchAsync(async(req,res,next)=>{
     })
 })
 
-exports.updateMe=catchAsync(async(req,res,next)=>{
-
-    if (req.body.password || req.body.passwordConfirm) {
-        return next(
-          new AppError(
-            'This route is not for password updates. Please use /updateMyPassword.',
-            StatusCodes.BAD_REQUEST
-          )
-        );
-      }
-    const updatedUser= await User.findByIdAndUpdate(req.params.id, req.body,{
-        New:true,
-        runValidators:true
-    })
-
-    res.status(StatusCodes.OK).json({
-        status:"success",
-        data:{
-            updatedUser
-        }
-    })
-})
 
 exports.deleteMe=catchAsync(async(req,res,next)=>{
     const user= await findByIdAndDelete(req.params.id)
