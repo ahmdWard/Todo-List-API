@@ -14,6 +14,6 @@ const taskSchema= new mongoose.Schema({
         default:"in progress"
     }
 })
-
+// calc the time of each task in min 
 
 module.exports=mongoose.model('Task',taskSchema)
