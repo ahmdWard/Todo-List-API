@@ -6,12 +6,17 @@ const userSchema = new mongoose.Schema({
         type:String,
         required:[true,'please provide your username']
     },
+    role:{
+        type:String,
+        enum:['admin','user'],
+        default:"user"
+    },
     password:{
         type:String,
         minlength:[10,'password should be at least 10 characters'],
         required:[true,'please provide your password']
     },
-    confirmPassword:{
+    passwordConfirm:{
         type:String,
         required:[true,'please confirm your Password '],
         validate:{
@@ -27,6 +32,11 @@ const userSchema = new mongoose.Schema({
         required:[true,'please provide you email'],
         unique:[true,'this email is used before'],
         validate:[validator.isEmail,'please provide a valid email']
+    },
+    active:{
+        type:Boolean,
+        default:true,
+        select:false
     }
 
 })
