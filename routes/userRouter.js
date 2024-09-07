@@ -14,6 +14,9 @@ router.use(check.protect)
 
 
 router.patch('/updatePassword',authController.updateMyPassword)
+router.post('/forgetPassword',authController.forgetPassword)
+router.post('/resetPassword/:token',authController.resetPassword)
+
 
 router
 .route('/')

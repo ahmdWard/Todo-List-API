@@ -3,6 +3,7 @@ const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const { StatusCodes } = require('http-status-codes');
 const JWT=require('jsonwebtoken')
+const crypto= require('crypto')
 
 const signToken =id=>{
     return JWT.sign({id} ,process.env.JWT_SECRET,{
@@ -47,7 +48,7 @@ exports.login = async(req, res,next) => {
      createSendToken(user,StatusCodes.OK,res)
   };
 
-  exports.signup= catchAsync(async(req,res,next)=>{
+exports.signup= catchAsync(async(req,res,next)=>{
     
     const newUser= await User.create({
         userName:req.body.userName,
@@ -60,11 +61,11 @@ exports.login = async(req, res,next) => {
     createSendToken(newUser,StatusCodes.CREATED,res)
   })
   
-  exports.logout = (req, res,next) => {
+exports.logout = (req, res,next) => {
     
   };
 
-  exports.updateMyPassword=catchAsync(async(req,res,next)=>{
+exports.updateMyPassword=catchAsync(async(req,res,next)=>{
     const user= await User.findById(req.user.id).select('+password')
 
     const {currentPassword, newPassword, newPasswordConfirm}=req.body
@@ -84,3 +85,47 @@ exports.login = async(req, res,next) => {
     createSendToken(user, StatusCodes.OK,res)
 
   })
+
+exports.forgetPassword=catchAsync(async(req,res,next)=>{
+
+    const {email}= req.body
+
+    const user = await User.findOne({email})
+    
+    if(!user)
+         return next(new AppError('this user with this email'),StatusCodes.NOT_FOUND)
+
+    const resetToken= user.createResetPasswordToken()
+    await user.save({ validateBeforeSave: false });
+
+
+    res.status(200).json({
+        resetToken
+    })
+
+
+})
+
+exports.resetPassword= catchAsync(async(req,res,next)=>{
+    const {password, passwordConfirm}=req.body
+
+
+    const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex')
+    console.log(hashedToken)
+    const user = await User.findOne({
+        passwordResetToken:hashedToken,
+        passwordResetExpires:{$gt:Date.now()}
+    })
+    if (!user) {
+        return next(new AppError('Token is invalid or has expired', 400));
+      }
+
+    user.password=password
+    user.passwordConfirm=passwordConfirm
+    user.passwordResetExpires=undefined
+    user.passwordResetToken=undefined
+
+    await user.save()
+
+  createSendToken(user,StatusCodes.OK,res)
+})
