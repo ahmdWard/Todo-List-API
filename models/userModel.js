@@ -15,7 +15,8 @@ const userSchema = new mongoose.Schema({
     password:{
         type:String,
         minlength:[10,'password should be at least 10 characters'],
-        required:[true,'please provide your password']
+        required:[true,'please provide your password'],
+        select:false
     },
     passwordConfirm:{
         type:String,
@@ -34,18 +35,18 @@ const userSchema = new mongoose.Schema({
         unique:[true,'this email is used before'],
         validate:[validator.isEmail,'please provide a valid email']
     },
+    passwordChangedAt:Date,
     active:{
         type:Boolean,
         default:true,
         select:false
-    },
-    passwordChangedAt:Date,
-
-
+    }
 })
 
 
 userSchema.pre('save', async function(){
+    if (!this.isModified('password')) return next();
+
     this.password= await bcrypt.hash(this.password,12)
     this.passwordConfirm=undefined
 })
@@ -57,5 +58,10 @@ userSchema.methods.correctPassword = async function
 }
 
 
-
+userSchema.pre(/^find/, function(next) {
+    // this points to the current query
+    this.find({ active: { $ne: false } });
+    next();
+  });
+  
 module.exports=mongoose.model('User',userSchema)
