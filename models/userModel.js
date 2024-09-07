@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
         required:[true,'please confirm your Password '],
         validate:{
             validator:function(el){
-                return el=this.password
+                return el===this.password
             },
             message: 'Passwords are not the same!'
 
@@ -51,11 +51,16 @@ userSchema.pre('save', async function(){
     this.passwordConfirm=undefined
 })
 
+userSchema.pre('save',function (next){
+  if(!this.isModified('password')||this.isNew) return next()
 
-userSchema.methods.correctPassword = async function
- (userPassword,candidatePassword){
-    return await bcrypt.compare(userPassword,candidatePassword)
-}
+  this.passwordChangedAt=Date.now() -1000
+  next()
+})
+
+
+
+
 
 
 userSchema.pre(/^find/, function(next) {
@@ -64,4 +69,11 @@ userSchema.pre(/^find/, function(next) {
     next();
   });
   
+
+
+
+userSchema.methods.correctPassword = async function
+(candidatePassword,userPassword){
+   return await bcrypt.compare(candidatePassword,userPassword)
+}
 module.exports=mongoose.model('User',userSchema)

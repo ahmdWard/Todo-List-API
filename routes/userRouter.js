@@ -12,6 +12,9 @@ router.post('/signup',authController.signup)
 
 router.use(check.protect)
 
+
+router.patch('/updatePassword',authController.updateMyPassword)
+
 router
 .route('/')
 .post(userController.createUser)

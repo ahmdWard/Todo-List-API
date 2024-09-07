@@ -34,7 +34,7 @@ if(!token){
           );
     }
 
-    req.user = currentUser;
+  req.user = currentUser;
   res.locals.user = currentUser;
   next();
 

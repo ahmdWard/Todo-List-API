@@ -40,7 +40,7 @@ exports.login = async(req, res,next) => {
    }
    const user = await User.findOne({ email }).select('+password');
 
-     if(!user||!(user.correctPassword(user.password,password))){
+     if(!user||!(await user.correctPassword(password,user.password))){
         return next(new AppError('Incorrect email or password', 401)); 
      }
 
@@ -63,3 +63,24 @@ exports.login = async(req, res,next) => {
   exports.logout = (req, res,next) => {
     
   };
+
+  exports.updateMyPassword=catchAsync(async(req,res,next)=>{
+    const user= await User.findById(req.user.id).select('+password')
+
+    const {currentPassword, newPassword, newPasswordConfirm}=req.body
+    console.log(currentPassword)
+
+    if(!currentPassword||!newPassword||!newPasswordConfirm)
+        return next(new AppError('please provide all fields'),StatusCodes.BAD_REQUEST)
+
+    if(!(await user.correctPassword(currentPassword,user.password))){
+        return next(new AppError('Incorrect password', StatusCodes.UNAUTHORIZED)); 
+    }
+
+    user.password=newPassword
+    user.passwordConfirm=newPasswordConfirm
+    await user.save()
+
+    createSendToken(user, StatusCodes.OK,res)
+
+  })
