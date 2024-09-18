@@ -34,6 +34,15 @@ if(!token){
           );
     }
 
+    if(currentUser.changePasswordAfterTokenIssued(decoded.iat)){
+        return next(
+            new AppError(
+              'User recently changed password! Please log in again.',
+              StatusCodes.UNAUTHORIZED
+            )
+          );
+    }
+
   req.user = currentUser;
   res.locals.user = currentUser;
   next();

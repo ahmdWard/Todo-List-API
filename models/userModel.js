@@ -63,9 +63,6 @@ userSchema.pre('save',function (next){
 
 
 
-
-
-
 userSchema.pre(/^find/, function(next) {
     // this points to the current query
     this.find({ active: { $ne: false } });
@@ -73,6 +70,20 @@ userSchema.pre(/^find/, function(next) {
   });
   
 
+
+userSchema.methods.changePasswordAfterTokenIssued= function(JWTTIMESTAMP){
+
+
+    if(this.passwordChangedAt){
+        const changedTimestamp = parseInt(
+            this.passwordChangedAt.getTime() / 1000,
+            10
+          );
+        
+          return JWTTIMESTAMP <changedTimestamp
+    }
+    return false
+}
 
 
 userSchema.methods.correctPassword = async function
